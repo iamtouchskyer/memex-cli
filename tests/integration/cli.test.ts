@@ -1,0 +1,81 @@
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { exec as execCb } from "node:child_process";
+import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const CLI_PATH = join(__dirname, "../../dist/cli.js");
+
+function run(
+  cmd: string,
+  opts: { env: Record<string, string>; input?: string }
+): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    const child = execCb(cmd, { env: opts.env }, (err, stdout, stderr) => {
+      if (err) {
+        const e: any = err;
+        e.stdout = stdout;
+        e.stderr = stderr;
+        return reject(e);
+      }
+      resolve({ stdout, stderr });
+    });
+    if (opts.input !== undefined) {
+      child.stdin!.write(opts.input);
+      child.stdin!.end();
+    }
+  });
+}
+
+describe("CLI integration", () => {
+  let tmpDir: string;
+  let env: Record<string, string>;
+
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "memex-cli-test-"));
+    await mkdir(join(tmpDir, "cards"), { recursive: true });
+    await mkdir(join(tmpDir, "archive"), { recursive: true });
+    env = { ...process.env, MEMEX_HOME: tmpDir } as Record<string, string>;
+  });
+
+  afterEach(async () => {
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it("write + read roundtrip", async () => {
+    const card = `---
+title: Test Card
+created: 2026-03-18
+source: manual
+---
+
+Hello world.`;
+
+    await run(`node ${CLI_PATH} write test-card`, { env, input: card });
+
+    const { stdout } = await run(`node ${CLI_PATH} read test-card`, { env });
+    expect(stdout).toContain("Test Card");
+    expect(stdout).toContain("Hello world.");
+  });
+
+  it("search with no args lists all", async () => {
+    await writeFile(
+      join(tmpDir, "cards", "a.md"),
+      "---\ntitle: Alpha\ncreated: 2026-03-18\nmodified: 2026-03-18\nsource: manual\n---\nContent."
+    );
+    const { stdout } = await run(`node ${CLI_PATH} search`, { env });
+    expect(stdout).toContain("Alpha");
+  });
+
+  it("read nonexistent exits 1", async () => {
+    try {
+      await run(`node ${CLI_PATH} read nope`, { env });
+      expect.fail("should have thrown");
+    } catch (e: any) {
+      expect(e.stderr).toContain("Card not found");
+    }
+  });
+});
