@@ -103,8 +103,13 @@ Node.js / TypeScript 实现。五个命令，纯数据操作，无 LLM 依赖：
 ## jwt-migration-pitfalls
 JWT 迁移的坑
 JWT 迁移最大的坑不是实现，是 revocation。Stateless token 天然不支持即时 revoke。
-> 匹配行: ...stateless token 天然不支持即时 revoke...
 Links: [[stateless-auth]], [[redis-session-store]]
+
+## caching-strategy
+缓存策略选型
+Redis vs Memcached 的核心区别在于数据结构支持...
+> 匹配行: ...revoke 失败时可以用缓存兜底...
+Links: [[redis-session-store]], [[api-performance]]
 ```
 
 每张匹配卡片返回：slug（作为 heading）、title、第一段摘要、匹配行（如果不在第一段则额外显示）、直接链接的 slug 列表。
@@ -147,7 +152,7 @@ LLM 拿到摘要后自己决定 `read` 哪些卡片。
 **输出格式示例：**
 ```
 slug                     out  in   status
-jwt-migration-pitfalls   3    5    hub
+jwt-migration-pitfalls   3    12   hub
 caching-strategy         2    1
 stateless-auth           1    0    orphan
 redis-session-store      0    3
