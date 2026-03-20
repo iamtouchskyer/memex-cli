@@ -17,8 +17,12 @@ export async function writeCommand(store: CardStore, slug: string, input: string
     return { success: false, error: `Missing required fields: ${missing.join(", ")}` };
   }
 
+  // Normalize all date fields to YYYY-MM-DD strings
   const today = new Date().toISOString().split("T")[0];
   data.modified = today;
+  if (data.created instanceof Date) {
+    data.created = data.created.toISOString().split("T")[0];
+  }
 
   const output = matter.stringify(content, data);
   await store.writeCard(slug, output);

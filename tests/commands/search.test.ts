@@ -56,7 +56,7 @@ When JWT revoke fails, use cache as fallback. See [[jwt-migration]].`
     expect(result.output).toContain("Caching Strategy");
   });
 
-  it("searches cards matching query", async () => {
+  it("searches cards matching query in body", async () => {
     const result = await searchCommand(store, "JWT");
     expect(result.output).toContain("## jwt-migration");
     expect(result.output).toContain("JWT Migration");
@@ -66,5 +66,30 @@ When JWT revoke fails, use cache as fallback. See [[jwt-migration]].`
   it("returns empty for no matches", async () => {
     const result = await searchCommand(store, "nonexistent-term-xyz");
     expect(result.output).toBe("");
+  });
+
+  it("does NOT match frontmatter-only content", async () => {
+    // "retro" appears in frontmatter (source: retro) but not in body
+    const result = await searchCommand(store, "retro");
+    expect(result.output).toBe("");
+  });
+
+  it("ranks results by match density", async () => {
+    // "JWT" appears 1x in jwt-migration body, 1x in caching body
+    // Both should match, jwt-migration first (or equal)
+    const result = await searchCommand(store, "JWT");
+    expect(result.output).toContain("## jwt-migration");
+    expect(result.output).toContain("## caching");
+  });
+
+  it("respects limit option", async () => {
+    const result = await searchCommand(store, "JWT", { limit: 1 });
+    const headings = result.output.match(/^## /gm) || [];
+    expect(headings.length).toBe(1);
+  });
+
+  it("is case-insensitive", async () => {
+    const result = await searchCommand(store, "jwt");
+    expect(result.output).toContain("## jwt-migration");
   });
 });
