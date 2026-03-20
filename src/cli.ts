@@ -8,6 +8,7 @@ import { readCommand } from "./commands/read.js";
 import { searchCommand } from "./commands/search.js";
 import { linksCommand } from "./commands/links.js";
 import { archiveCommand } from "./commands/archive.js";
+import { serveCommand } from "./commands/serve.js";
 
 function getStore(): CardStore {
   const home = process.env.MEMEX_HOME || join(homedir(), ".memex");
@@ -83,6 +84,14 @@ program
       process.stderr.write(result.error! + "\n");
       process.exit(1);
     }
+  });
+
+program
+  .command("serve")
+  .description("Start web UI for browsing cards")
+  .option("-p, --port <n>", "Port number", "3939")
+  .action(async (opts: { port: string }) => {
+    await serveCommand(parseInt(opts.port));
   });
 
 program.parse();
