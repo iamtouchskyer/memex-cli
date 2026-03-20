@@ -1,5 +1,5 @@
 ---
-name: organize
+name: memex-organize
 description: Periodic maintenance of the Zettelkasten card network. Run on a schedule (e.g., daily) to detect orphans, hubs, and contradictions.
 ---
 
