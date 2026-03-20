@@ -101,11 +101,6 @@ export class GitAdapter implements SyncAdapter {
         "create",
         "memex-cards",
         "--private",
-        "--clone=false",
-        "--json",
-        "sshUrl",
-        "-q",
-        ".sshUrl",
       ]);
       url = stdout.trim();
     }
