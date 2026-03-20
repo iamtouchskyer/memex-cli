@@ -86,7 +86,31 @@ memex links                       # global link graph stats
 memex links jwt-migration         # inbound/outbound links for a card
 memex archive old-card            # move to ~/.memex/archive/
 memex serve                       # browse cards in a visual timeline
+memex sync --init <repo-url>      # setup sync with your git repo
+memex sync                        # push + pull
+memex sync --status               # check sync state
+memex sync --auto on              # auto-sync after every write
 ```
+
+## Sync
+
+Sync cards across devices via git:
+
+```bash
+# Option A: provide your own repo
+memex sync --init git@github.com:you/memex-cards.git
+
+# Option B: auto-create private repo via gh CLI
+memex sync --init
+
+# Sync manually
+memex sync
+
+# Or enable auto-sync (syncs after every write/archive)
+memex sync --auto on
+```
+
+Cards are plain markdown — git handles merging, history, and conflict resolution natively.
 
 ## Skills
 
