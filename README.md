@@ -67,6 +67,32 @@ You have a Zettelkasten memory via the `memex` CLI.
 - After a task: `memex write <slug>` to save insights (pipe content via stdin)
 ```
 
+## Upgrade
+
+### Claude Code
+
+```bash
+npm update -g @touchskyer/memex
+```
+
+Plugin skills and hooks update automatically from the marketplace.
+
+### VS Code / Copilot / Cursor / Windsurf
+
+If you installed via `npx` (recommended), you're always on the latest — `npx -y` fetches the newest version automatically.
+
+To force a cache refresh:
+
+```bash
+npx -y @touchskyer/memex@latest mcp
+```
+
+### Codex / global install
+
+```bash
+npm update -g @touchskyer/memex
+```
+
 ## Browse your memory
 
 ```bash
