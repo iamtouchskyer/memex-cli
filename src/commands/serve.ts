@@ -233,21 +233,42 @@ body::-webkit-scrollbar { display: none; }
   100% { opacity: 1; }
 }
 
-/* === Top bar === */
+/* === Floating Window === */
+.window {
+  position: relative;
+  z-index: 1;
+  max-width: 1060px;
+  margin: 24px auto;
+  height: calc(100vh - 48px);
+  border-radius: 12px;
+  background: var(--surface);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+[data-theme="midnight"] .window {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+  border-color: rgba(255,255,255,0.12);
+}
+
+/* === Title bar === */
 .topbar {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 24px;
+  padding: 10px 20px;
   height: 44px;
-  background: var(--menubar-bg);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border-bottom: 0.5px solid var(--border);
+  background: rgba(0,0,0,0.03);
+  border-bottom: 1px solid var(--border);
   gap: 16px;
+  flex-shrink: 0;
+}
+[data-theme="midnight"] .topbar {
+  background: rgba(0,0,0,0.15);
 }
 
 .topbar-title {
@@ -314,14 +335,9 @@ body::-webkit-scrollbar { display: none; }
 
 /* === Layout === */
 .layout {
-  position: relative;
-  z-index: 1;
   display: flex;
-  height: calc(100vh - 44px);
-  margin-top: 44px;
-  max-width: 1060px;
-  margin-left: auto;
-  margin-right: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 /* === Sidebar === */
@@ -332,9 +348,6 @@ body::-webkit-scrollbar { display: none; }
   overflow-y: auto;
   padding: 24px 20px 40px;
   border-right: 0.5px solid var(--border);
-  background: var(--surface);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
 }
 
 /* Stats row */
@@ -711,9 +724,10 @@ body::-webkit-scrollbar { display: none; }
 .theme-tile.active { border-color: var(--blue); }
 
 @media (max-width: 700px) {
+  .window { margin: 8px; height: calc(100vh - 16px); border-radius: 10px; }
   .sidebar { display: none; }
   .layout { display: block; }
-  .main { height: calc(100vh - 44px); padding: 16px 12px 80px; }
+  .main { height: 100%; padding: 16px 12px 80px; }
 }
 </style>
 </head>
@@ -721,28 +735,29 @@ body::-webkit-scrollbar { display: none; }
 
 <div class="wallpaper"></div>
 
-<div class="topbar">
-  <div class="topbar-title">memex</div>
-  <div class="search-wrap">
-    <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="5.5"/><line x1="13" y1="13" x2="17" y2="17"/></svg>
-    <input type="text" class="search-input" placeholder="Search cards..." id="search">
-    <span class="search-kbd">&#8984;K</span>
-  </div>
-</div>
-
-<div class="layout">
-  <aside class="sidebar" id="sidebar">
-    <div class="stats-row" id="stats-row">
-      <div class="stat-item"><div class="stat-num" id="stat-cards">-</div><div class="stat-label">cards</div></div>
-      <div class="stat-item"><div class="stat-num" id="stat-links">-</div><div class="stat-label">links</div></div>
-      <div class="stat-item"><div class="stat-num" id="stat-days">-</div><div class="stat-label">days</div></div>
+<div class="window">
+  <div class="topbar">
+    <div class="topbar-title">memex</div>
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="5.5"/><line x1="13" y1="13" x2="17" y2="17"/></svg>
+      <input type="text" class="search-input" placeholder="Search cards..." id="search">
+      <span class="search-kbd">&#8984;K</span>
     </div>
-    <div class="heatmap-wrap" id="heatmap"></div>
-    <hr class="sidebar-sep">
-    <div class="cat-title">Categories</div>
-    <ul class="cat-list" id="cat-list"></ul>
-  </aside>
-  <div class="main" id="timeline"></div>
+  </div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="stats-row" id="stats-row">
+        <div class="stat-item"><div class="stat-num" id="stat-cards">-</div><div class="stat-label">cards</div></div>
+        <div class="stat-item"><div class="stat-num" id="stat-links">-</div><div class="stat-label">links</div></div>
+        <div class="stat-item"><div class="stat-num" id="stat-days">-</div><div class="stat-label">days</div></div>
+      </div>
+      <div class="heatmap-wrap" id="heatmap"></div>
+      <hr class="sidebar-sep">
+      <div class="cat-title">Categories</div>
+      <ul class="cat-list" id="cat-list"></ul>
+    </aside>
+    <div class="main" id="timeline"></div>
+  </div>
 </div>
 
 <!-- Theme picker -->
