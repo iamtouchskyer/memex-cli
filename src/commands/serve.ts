@@ -259,13 +259,14 @@ body::-webkit-scrollbar { display: none; }
 [data-theme="midnight"] .cat-item.active {
   background: rgba(0,122,255,0.15);
 }
-[data-theme="midnight"] .heatmap-day {
-  background: rgba(255,255,255,0.06) !important;
+[data-theme="midnight"] .heatmap-cell {
+  background: rgba(255,255,255,0.08) !important;
 }
-[data-theme="midnight"] .heatmap-day.l1 { background: rgba(52,199,89,0.2) !important; }
-[data-theme="midnight"] .heatmap-day.l2 { background: rgba(52,199,89,0.4) !important; }
-[data-theme="midnight"] .heatmap-day.l3 { background: rgba(52,199,89,0.6) !important; }
-[data-theme="midnight"] .heatmap-day.l4 { background: rgba(52,199,89,0.85) !important; }
+[data-theme="midnight"] .heatmap-cell.l1 { background: rgba(52,199,89,0.25) !important; }
+[data-theme="midnight"] .heatmap-cell.l2 { background: rgba(52,199,89,0.45) !important; }
+[data-theme="midnight"] .heatmap-cell.l3 { background: rgba(52,199,89,0.65) !important; }
+[data-theme="midnight"] .heatmap-cell.l4 { background: rgba(52,199,89,0.9) !important; }
+[data-theme="midnight"] .heatmap-months span { color: rgba(255,255,255,0.3); }
 [data-theme="midnight"] .date-header { color: rgba(255,255,255,0.4); }
 [data-theme="midnight"] .card-body-inner code { background: rgba(255,255,255,0.1); }
 [data-theme="midnight"] .card-body-inner pre { background: rgba(255,255,255,0.06); }
@@ -402,10 +403,10 @@ body::-webkit-scrollbar { display: none; }
   gap: 3px;
 }
 .heatmap-cell {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-  background: rgba(0,0,0,0.04);
+  width: 13px;
+  height: 13px;
+  border-radius: 2px;
+  background: rgba(0,0,0,0.06);
 }
 .heatmap-cell.l1 { background: rgba(52,199,89,0.25); }
 .heatmap-cell.l2 { background: rgba(52,199,89,0.5); }
