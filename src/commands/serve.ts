@@ -156,38 +156,18 @@ function getHTML(): string {
   --wallpaper-glow-2: rgba(140,180,120,0.25);
 }
 
-/* Themes */
+/* Themes — apply to window, not wallpaper */
 [data-theme="sonoma"] {
-  --wallpaper: linear-gradient(160deg, #b8cfe0 0%, #c5bedd 40%, #d4c5cc 70%, #c8d4c8 100%);
-  --wallpaper-glow-1: rgba(255,255,255,0.25);
-  --wallpaper-glow-2: rgba(180,160,200,0.3);
-  --surface: rgba(255,255,255,0.72);
-  --surface-2: rgba(255,255,255,0.45);
-  --menubar-bg: rgba(236,236,236,0.72);
+  --win-bg: linear-gradient(160deg, #e8eaf0 0%, #e4e0ec 40%, #ece4e8 70%, #e4ece4 100%);
 }
 [data-theme="forest"] {
-  --wallpaper: linear-gradient(160deg, #b8d4c0 0%, #c8d4a8 40%, #d0c8a8 70%, #c0d0b8 100%);
-  --wallpaper-glow-1: rgba(255,255,240,0.25);
-  --wallpaper-glow-2: rgba(140,180,120,0.25);
-  --surface: rgba(255,255,255,0.70);
-  --surface-2: rgba(255,255,255,0.44);
-  --menubar-bg: rgba(228,236,224,0.72);
+  --win-bg: linear-gradient(160deg, #e4ece0 0%, #e8ecd4 40%, #ece8d4 70%, #e0ece0 100%);
 }
 [data-theme="sunset"] {
-  --wallpaper: linear-gradient(160deg, #e8c4a0 0%, #d4a8b8 40%, #c4a8d8 70%, #d4b8c0 100%);
-  --wallpaper-glow-1: rgba(255,240,220,0.3);
-  --wallpaper-glow-2: rgba(200,140,160,0.3);
-  --surface: rgba(255,255,255,0.68);
-  --surface-2: rgba(255,255,255,0.42);
-  --menubar-bg: rgba(240,228,220,0.72);
+  --win-bg: linear-gradient(160deg, #f0e4d8 0%, #ece0e4 40%, #e4e0ec 70%, #ece0e4 100%);
 }
 [data-theme="midnight"] {
-  --wallpaper: linear-gradient(160deg, #0d1117 0%, #1a1f2e 40%, #161d2e 70%, #0f1520 100%);
-  --wallpaper-glow-1: rgba(60,100,180,0.15);
-  --wallpaper-glow-2: rgba(80,40,120,0.2);
-  --surface: rgba(40,44,52,0.75);
-  --surface-2: rgba(50,55,65,0.55);
-  --menubar-bg: rgba(20,22,28,0.82);
+  --win-bg: linear-gradient(160deg, #1a1d24 0%, #222632 40%, #1e2430 70%, #181c24 100%);
   --border: rgba(255,255,255,0.1);
   --border-strong: rgba(255,255,255,0.18);
   --label: rgba(255,255,255,0.92);
@@ -232,21 +212,19 @@ body::-webkit-scrollbar { display: none; }
   position: relative;
   z-index: 1;
   max-width: 1060px;
-  margin: 0 auto;
-  height: 100vh;
-  border-radius: 0;
-  background: #fff;
-  border: none;
-  box-shadow: none;
+  margin: 24px auto;
+  height: calc(100vh - 48px);
+  border-radius: 14px;
+  background: var(--win-bg, linear-gradient(160deg, #e4ece0 0%, #e8ecd4 40%, #ece8d4 70%, #e0ece0 100%));
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.12);
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
-[data-theme="midnight"] .wallpaper { background: #1e1e1e; }
 [data-theme="midnight"] .window {
-  background: #1e1e1e;
-  box-shadow: none;
-  border-color: transparent;
+  border-color: rgba(255,255,255,0.1);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4);
 }
 
 /* === Title bar === */
@@ -759,10 +737,10 @@ body::-webkit-scrollbar { display: none; }
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
 </button>
 <div class="theme-popover" id="theme-popover">
-  <div class="theme-tile" data-theme="sonoma" title="Sonoma" style="background:linear-gradient(160deg,#b8cfe0 0%,#c5bedd 40%,#d4c5cc 70%,#c8d4c8 100%)"></div>
-  <div class="theme-tile" data-theme="forest" title="Forest" style="background:linear-gradient(160deg,#b8d4c0 0%,#c8d4a8 40%,#d0c8a8 70%,#c0d0b8 100%)"></div>
-  <div class="theme-tile" data-theme="sunset" title="Sunset" style="background:linear-gradient(160deg,#e8c4a0 0%,#d4a8b8 40%,#c4a8d8 70%,#d4b8c0 100%)"></div>
-  <div class="theme-tile" data-theme="midnight" title="Midnight" style="background:linear-gradient(160deg,#0d1117 0%,#1a1f2e 40%,#161d2e 70%,#0f1520 100%)"></div>
+  <div class="theme-tile" data-theme="sonoma" title="Sonoma" style="background:linear-gradient(160deg,#e8eaf0 0%,#e4e0ec 40%,#ece4e8 70%,#e4ece4 100%)"></div>
+  <div class="theme-tile" data-theme="forest" title="Forest" style="background:linear-gradient(160deg,#e4ece0 0%,#e8ecd4 40%,#ece8d4 70%,#e0ece0 100%)"></div>
+  <div class="theme-tile" data-theme="sunset" title="Sunset" style="background:linear-gradient(160deg,#f0e4d8 0%,#ece0e4 40%,#e4e0ec 70%,#ece0e4 100%)"></div>
+  <div class="theme-tile" data-theme="midnight" title="Midnight" style="background:linear-gradient(160deg,#1a1d24 0%,#222632 40%,#1e2430 70%,#181c24 100%)"></div>
 </div>
 
 <script>
