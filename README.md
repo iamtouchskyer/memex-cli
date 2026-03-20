@@ -18,6 +18,14 @@ No vector database, no embeddings — just markdown files your agent (and you) c
 
 ## Install
 
+### Any editor (one command)
+
+```bash
+npx add-mcp @touchskyer/memex -- mcp
+```
+
+Supports Claude Code, Cursor, Codex, VS Code, Gemini CLI, Goose, Zed, and more. Auto-detects your editor.
+
 ### Claude Code (best experience)
 
 ```bash
@@ -37,35 +45,23 @@ code --add-mcp '{"name":"memex","command":"npx","args":["-y","@touchskyer/memex"
 
 ### Cursor
 
-Add to `.cursor/mcp.json`:
+[**One-click install**](cursor://anysphere.cursor-deeplink/mcp/install?name=memex&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsIkB0b3VjaHNreWVyL21lbWV4IiwibWNwIl19)
 
-```json
-{
-  "mcpServers": {
-    "memex": { "command": "npx", "args": ["-y", "@touchskyer/memex", "mcp"] }
-  }
-}
+Or via command:
+
+```bash
+codex mcp add memex -- npx -y @touchskyer/memex mcp
 ```
-
-### Windsurf / Other MCP clients
-
-Same pattern — add memex as an MCP server with command `npx` and args `["-y", "@touchskyer/memex", "mcp"]`.
 
 ### Codex
 
 ```bash
-npm i -g @touchskyer/memex
+codex mcp add memex -- npx -y @touchskyer/memex mcp
 ```
 
-Then add to your project's `AGENTS.md`:
+### Windsurf / Other MCP clients
 
-```markdown
-## Memory
-
-You have a Zettelkasten memory via the `memex` CLI.
-- Before a task: `memex search <keyword>`, then `memex read <slug>` for context
-- After a task: `memex write <slug>` to save insights (pipe content via stdin)
-```
+Add memex as an MCP server with command `npx` and args `["-y", "@touchskyer/memex", "mcp"]`.
 
 ## Upgrade
 
