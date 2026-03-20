@@ -157,7 +157,7 @@ export async function serveCommand(port: number): Promise<void> {
       }
     });
 
-    server.listen(currentPort, () => {
+    server.listen(currentPort, "127.0.0.1", () => {
       const url = `http://localhost:${currentPort}`;
       console.log(`memex is running at ${url}`);
       if (!process.env.MEMEX_NO_OPEN) {

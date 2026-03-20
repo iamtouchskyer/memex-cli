@@ -1,5 +1,5 @@
 import { readdir, readFile, writeFile, rename, mkdir } from "node:fs/promises";
-import { join, basename, dirname } from "node:path";
+import { join, basename, dirname, resolve, normalize } from "node:path";
 
 interface ScannedCard {
   slug: string;
@@ -11,6 +11,16 @@ export class CardStore {
     public readonly cardsDir: string,
     private archiveDir: string
   ) {}
+
+  /** Sanitize slug to prevent path traversal */
+  private sanitizeSlug(slug: string): string {
+    // Strip path separators and parent directory references
+    const clean = basename(normalize(slug));
+    if (!clean || clean === "." || clean === "..") {
+      throw new Error(`Invalid slug: ${slug}`);
+    }
+    return clean;
+  }
 
   async scanAll(): Promise<ScannedCard[]> {
     const results: ScannedCard[] = [];
@@ -51,25 +61,27 @@ export class CardStore {
   }
 
   async writeCard(slug: string, content: string): Promise<void> {
-    const existing = await this.resolve(slug);
-    const targetPath = existing ?? join(this.cardsDir, `${slug}.md`);
+    const safe = this.sanitizeSlug(slug);
+    const existing = await this.resolve(safe);
+    const targetPath = existing ?? join(this.cardsDir, `${safe}.md`);
     await mkdir(dirname(targetPath), { recursive: true });
     await writeFile(targetPath, content, "utf-8");
   }
 
   async archiveCard(slug: string): Promise<void> {
-    const path = await this.resolve(slug);
+    const safe = this.sanitizeSlug(slug);
+    const path = await this.resolve(safe);
     if (!path) {
       try {
-        await readFile(join(this.archiveDir, `${slug}.md`));
-        throw new Error(`Card already archived: ${slug}`);
+        await readFile(join(this.archiveDir, `${safe}.md`));
+        throw new Error(`Card already archived: ${safe}`);
       } catch (e) {
         if ((e as Error).message.includes("already archived")) throw e;
-        throw new Error(`Card not found: ${slug}`);
+        throw new Error(`Card not found: ${safe}`);
       }
     }
     await mkdir(this.archiveDir, { recursive: true });
-    const dest = join(this.archiveDir, `${slug}.md`);
+    const dest = join(this.archiveDir, `${safe}.md`);
     await rename(path, dest);
   }
 }
