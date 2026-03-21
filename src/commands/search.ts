@@ -30,7 +30,9 @@ export async function searchCommand(store: CardStore, query: string | undefined,
   }
 
   // With query: search body only (strip frontmatter before matching)
-  const limit = options.limit ?? DEFAULT_LIMIT;
+  const rawLimit = options.limit ?? DEFAULT_LIMIT;
+  // Clamp limit to a safe positive range; 0 returns no results (intentional)
+  const limit = rawLimit < 0 ? DEFAULT_LIMIT : rawLimit;
   const matchedCards: { slug: string; matchLine: string; matchCount: number }[] = [];
 
   for (const card of cards) {

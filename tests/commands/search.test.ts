@@ -88,6 +88,20 @@ When JWT revoke fails, use cache as fallback. See [[jwt-migration]].`
     expect(headings.length).toBe(1);
   });
 
+  it("treats negative limit as default (not slice-from-end)", async () => {
+    // With 2 matching cards and limit=-1, should NOT silently strip the last result
+    // It should fall back to DEFAULT_LIMIT (10), returning all 2 matches
+    const result = await searchCommand(store, "JWT", { limit: -1 });
+    // Should contain all matches (both jwt-migration and caching have 'JWT')
+    expect(result.output).toContain("## jwt-migration");
+    expect(result.output).toContain("## caching");
+  });
+
+  it("returns empty output for limit=0", async () => {
+    const result = await searchCommand(store, "JWT", { limit: 0 });
+    expect(result.output).toBe("");
+  });
+
   it("is case-insensitive", async () => {
     const result = await searchCommand(store, "jwt");
     expect(result.output).toContain("## jwt-migration");
