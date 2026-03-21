@@ -608,6 +608,81 @@ body::-webkit-scrollbar { display: none; }
 .theme-tile:hover { transform: scale(1.06); }
 .theme-tile.active { border-color: var(--blue); }
 
+/* === Share button === */
+.share-btn {
+  display: block;
+  margin: 12px 0 0;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(0,122,255,0.08);
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.share-btn:hover { background: rgba(0,122,255,0.16); }
+.card:not(.expanded) .share-btn { display: none; }
+
+/* === Share modal === */
+.share-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+}
+.share-overlay.open { display: flex; }
+.share-preview {
+  border-radius: 14px;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.3);
+}
+.share-actions {
+  display: flex;
+  gap: 8px;
+}
+.share-action-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.share-action-btn.primary {
+  background: #007aff;
+  color: #fff;
+}
+.share-action-btn.primary:hover { background: #0066d6; }
+.share-action-btn.secondary {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+}
+.share-action-btn.secondary:hover { background: rgba(255,255,255,0.15); }
+.share-themes {
+  display: flex;
+  gap: 6px;
+}
+.share-theme-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.share-theme-btn:hover { transform: scale(1.1); }
+.share-theme-btn.active { border-color: #007aff; }
+
 /* === View toggle === */
 .view-toggle {
   display: flex;
@@ -781,6 +856,21 @@ body::-webkit-scrollbar { display: none; }
       <div class="graph-orphan-badge" id="graphOrphanBadge"></div>
       <div class="graph-hint">CLICK TO INSPECT · DRAG TO PAN · SCROLL TO ZOOM</div>
     </div>
+  </div>
+</div>
+
+<!-- Share modal -->
+<div class="share-overlay" id="shareOverlay" onclick="if(event.target===this)closeShare()">
+  <canvas class="share-preview" id="shareCanvas" width="600" height="800"></canvas>
+  <div class="share-themes" id="shareThemes">
+    <button class="share-theme-btn active" data-stheme="forest" style="background:#f3f6f0" onclick="setShareTheme('forest',this)"></button>
+    <button class="share-theme-btn" data-stheme="sonoma" style="background:#f5f5f7" onclick="setShareTheme('sonoma',this)"></button>
+    <button class="share-theme-btn" data-stheme="sunset" style="background:#f8f4f0" onclick="setShareTheme('sunset',this)"></button>
+    <button class="share-theme-btn" data-stheme="midnight" style="background:#1c1c1e" onclick="setShareTheme('midnight',this)"></button>
+  </div>
+  <div class="share-actions">
+    <button class="share-action-btn secondary" onclick="closeShare()">Cancel</button>
+    <button class="share-action-btn primary" onclick="downloadShare()">Download</button>
   </div>
 </div>
 
@@ -1074,7 +1164,9 @@ body::-webkit-scrollbar { display: none; }
       + (chips ? '<div class="card-links">' + chips + '</div>' : '')
       + '<div class="card-body"><div class="card-body-inner" id="body-' + esc(c.slug) + '">'
       + (isExpanded && bodyCache[c.slug] ? renderMarkdown(bodyCache[c.slug]) : '')
-      + '</div></div>'
+      + '</div>'
+      + '<button class="share-btn" data-share-slug="' + esc(c.slug) + '" onclick="event.stopPropagation();shareCard(\'' + esc(c.slug) + '\')">Share</button>'
+      + '</div>'
       + '</div>';
   }
 
@@ -1175,6 +1267,221 @@ body::-webkit-scrollbar { display: none; }
   }
 
   init();
+})();
+</script>
+
+<!-- Share card renderer -->
+<script>
+(function() {
+  let shareSlug = null;
+  let shareTheme = 'forest';
+  let shareData = null;
+
+  const themes = {
+    forest:  { bg: '#f3f6f0', text: '#1d1d1f', sub: '#666', accent: '#007aff', chipBg: 'rgba(0,122,255,0.08)', chipText: '#007aff', border: 'rgba(0,0,0,0.08)', quote: '#34c759', brand: '#999' },
+    sonoma:  { bg: '#f5f5f7', text: '#1d1d1f', sub: '#666', accent: '#007aff', chipBg: 'rgba(0,122,255,0.08)', chipText: '#007aff', border: 'rgba(0,0,0,0.08)', quote: '#007aff', brand: '#999' },
+    sunset:  { bg: '#f8f4f0', text: '#2c2420', sub: '#8a7b6b', accent: '#d4603a', chipBg: 'rgba(212,96,58,0.08)', chipText: '#d4603a', border: 'rgba(0,0,0,0.06)', quote: '#d4603a', brand: '#b0a090' },
+    midnight:{ bg: '#1c1c1e', text: 'rgba(255,255,255,0.9)', sub: 'rgba(255,255,255,0.35)', accent: '#5ac8fa', chipBg: 'rgba(90,200,250,0.1)', chipText: '#5ac8fa', border: 'rgba(255,255,255,0.08)', quote: '#34c759', brand: 'rgba(255,255,255,0.2)' },
+  };
+
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    const words = text.split(' ');
+    let line = '';
+    let lines = [];
+    words.forEach(word => {
+      const test = line + (line ? ' ' : '') + word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
+    if (line) lines.push(line);
+    lines.forEach((l, i) => ctx.fillText(l, x, y + i * lineHeight));
+    return lines.length;
+  }
+
+  function renderShareCard() {
+    if (!shareData) return;
+    const canvas = document.getElementById('shareCanvas');
+    const ctx = canvas.getContext('2d');
+    const t = themes[shareTheme];
+    const scale = 2;
+    const W = 420, H_BASE = 520;
+
+    // Measure content height first
+    ctx.font = '15px -apple-system, sans-serif';
+    const bodyLines = [];
+    const bodyText = shareData.body || shareData.firstLine || '';
+    const words = bodyText.split(' ');
+    let line = '';
+    words.forEach(w => {
+      const test = line + (line ? ' ' : '') + w;
+      ctx.font = '15px -apple-system, sans-serif';
+      if (ctx.measureText(test).width > (W - 80) * scale / scale && line) {
+        bodyLines.push(line); line = w;
+      } else { line = test; }
+    });
+    if (line) bodyLines.push(line);
+
+    const chipRows = Math.ceil((shareData.links || []).length / 3);
+    const contentH = Math.max(H_BASE, 180 + bodyLines.length * 24 + chipRows * 32 + 80);
+
+    canvas.width = W * scale;
+    canvas.height = contentH * scale;
+    canvas.style.width = Math.min(W, window.innerWidth - 40) + 'px';
+    canvas.style.height = Math.min(contentH, window.innerHeight - 160) * (Math.min(W, window.innerWidth - 40) / W) + 'px';
+    ctx.scale(scale, scale);
+
+    // Background
+    ctx.fillStyle = t.bg;
+    ctx.beginPath();
+    ctx.roundRect(0, 0, W, contentH, 16);
+    ctx.fill();
+
+    // Quote mark
+    ctx.font = 'bold 48px Georgia, serif';
+    ctx.fillStyle = t.quote;
+    ctx.fillText('\u201C', 30, 62);
+
+    // Date
+    ctx.font = '12px -apple-system, sans-serif';
+    ctx.fillStyle = t.sub;
+    ctx.textAlign = 'right';
+    const dateStr = shareData.created ? shareData.created.slice(0, 10).replace(/-/g, '/') : '';
+    ctx.fillText(dateStr, W - 30, 42);
+    ctx.textAlign = 'left';
+
+    // Source badge
+    const src = (shareData.source || 'note').toLowerCase();
+    ctx.font = '600 10px -apple-system, sans-serif';
+    const badgeW = ctx.measureText(src.toUpperCase()).width + 14;
+    ctx.fillStyle = t.chipBg;
+    ctx.beginPath();
+    ctx.roundRect(30, 76, badgeW, 20, 10);
+    ctx.fill();
+    ctx.fillStyle = t.chipText;
+    ctx.fillText(src.toUpperCase(), 37, 90);
+
+    // Title
+    ctx.font = 'bold 18px -apple-system, sans-serif';
+    ctx.fillStyle = t.text;
+    let y = 120;
+    const titleLines = wrapText(ctx, shareData.title || shareData.slug, 30, y, W - 60, 24);
+    y += titleLines * 24 + 12;
+
+    // Body
+    ctx.font = '15px -apple-system, sans-serif';
+    ctx.fillStyle = t.sub;
+    bodyLines.forEach((l, i) => {
+      ctx.fillText(l, 30, y + i * 24);
+    });
+    y += bodyLines.length * 24 + 16;
+
+    // Link chips
+    if (shareData.links && shareData.links.length > 0) {
+      let chipX = 30;
+      let chipY = y;
+      ctx.font = '11px -apple-system, sans-serif';
+      shareData.links.forEach(link => {
+        const label = '[[' + link + ']]';
+        const cw = ctx.measureText(label).width + 16;
+        if (chipX + cw > W - 30) { chipX = 30; chipY += 28; }
+        ctx.fillStyle = t.chipBg;
+        ctx.beginPath();
+        ctx.roundRect(chipX, chipY, cw, 22, 11);
+        ctx.fill();
+        ctx.fillStyle = t.chipText;
+        ctx.fillText(label, chipX + 8, chipY + 15);
+        chipX += cw + 6;
+      });
+      y = chipY + 40;
+    }
+
+    // Divider
+    y = Math.max(y, contentH - 60);
+    ctx.strokeStyle = t.border;
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(30, y); ctx.lineTo(W - 30, y);
+    ctx.stroke();
+
+    // Footer
+    y += 20;
+    ctx.font = '10px -apple-system, sans-serif';
+    ctx.fillStyle = t.brand;
+    ctx.letterSpacing = '1px';
+    const statsText = (shareData.totalCards || 0) + ' CARDS \u00b7 ' + (shareData.totalDays || 0) + ' DAYS';
+    ctx.fillText(statsText, 30, y);
+    ctx.textAlign = 'right';
+    ctx.font = '600 11px -apple-system, sans-serif';
+    ctx.fillText('memex', W - 30, y);
+    ctx.textAlign = 'left';
+  }
+
+  window.shareCard = async function(slug) {
+    shareSlug = slug;
+    // Get current theme
+    shareTheme = document.documentElement.getAttribute('data-theme') || 'forest';
+    // Update theme buttons
+    document.querySelectorAll('.share-theme-btn').forEach(b => b.classList.toggle('active', b.dataset.stheme === shareTheme));
+
+    // Load card data
+    const res = await fetch('/api/cards/' + encodeURIComponent(slug));
+    const raw = await res.text();
+    const fmMatch = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+    let title = slug, created = '', source = '', links = [];
+    let body = raw;
+    if (fmMatch) {
+      const fm = fmMatch[1];
+      body = fmMatch[2].trim();
+      const titleM = fm.match(/title:\s*['"]?(.+?)['"]?\s*$/m);
+      const createdM = fm.match(/created:\s*['"]?(.+?)['"]?\s*$/m);
+      const sourceM = fm.match(/source:\s*['"]?(.+?)['"]?\s*$/m);
+      if (titleM) title = titleM[1];
+      if (createdM) created = createdM[1];
+      if (sourceM) source = sourceM[1];
+    }
+    // Extract [[links]]
+    const linkRe = /\[\[([^\]]+)\]\]/g;
+    let m;
+    while ((m = linkRe.exec(body)) !== null) links.push(m[1]);
+    links = [...new Set(links)];
+
+    // Get stats
+    const statsCards = document.getElementById('stat-cards').textContent;
+    const statsDays = document.getElementById('stat-days').textContent;
+
+    shareData = { slug, title, body, created, source, links, firstLine: body.split('\n')[0],
+      totalCards: parseInt(statsCards) || 0, totalDays: parseInt(statsDays) || 0 };
+
+    renderShareCard();
+    document.getElementById('shareOverlay').classList.add('open');
+  };
+
+  window.setShareTheme = function(theme, btn) {
+    shareTheme = theme;
+    document.querySelectorAll('.share-theme-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderShareCard();
+  };
+
+  window.downloadShare = function() {
+    const canvas = document.getElementById('shareCanvas');
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (shareSlug || 'memex-card') + '.png';
+      a.click();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  };
+
+  window.closeShare = function() {
+    document.getElementById('shareOverlay').classList.remove('open');
+  };
 })();
 </script>
 
