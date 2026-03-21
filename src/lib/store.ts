@@ -1,5 +1,5 @@
 import { readdir, readFile, writeFile, rename, mkdir } from "node:fs/promises";
-import { join, basename, dirname, resolve } from "node:path";
+import { join, relative, dirname, resolve, sep } from "node:path";
 
 interface ScannedCard {
   slug: string;
@@ -39,10 +39,11 @@ export class CardStore {
       if (entry.isDirectory()) {
         await this.walkDir(fullPath, results);
       } else if (entry.name.endsWith(".md")) {
-        results.push({
-          slug: basename(entry.name, ".md"),
-          path: fullPath,
-        });
+        // Use relative path from cardsDir as slug (preserves subdirectory structure).
+        // Normalize path separator to "/" for cross-platform consistency (Windows uses "\").
+        const relPath = relative(this.cardsDir, fullPath);
+        const slug = relPath.replace(/\.md$/, "").split(sep).join("/");
+        results.push({ slug, path: fullPath });
       }
     }
   }
@@ -88,7 +89,9 @@ export class CardStore {
       }
     }
     await mkdir(this.archiveDir, { recursive: true });
+    // Preserve subdirectory structure in archive (slug may contain path separators)
     const dest = join(this.archiveDir, `${slug}.md`);
+    await mkdir(dirname(dest), { recursive: true });
     await rename(path, dest);
     this.invalidateCache();
   }
