@@ -161,10 +161,15 @@ export class GitAdapter implements SyncAdapter {
       };
     }
 
-    // Stage all changes
-    await execFile("git", ["-C", this.home, "add", "-A"]);
+    // Fetch remote first
+    try {
+      await execFile("git", ["-C", this.home, "fetch", "origin"]);
+    } catch {
+      // Offline is OK — just sync local
+    }
 
-    // Commit if there are changes
+    // Stage and commit local changes
+    await execFile("git", ["-C", this.home, "add", "-A"]);
     try {
       const ts = new Date().toISOString();
       await execFile("git", [
@@ -178,15 +183,14 @@ export class GitAdapter implements SyncAdapter {
       // Nothing to commit — that's fine
     }
 
-    // Pull merge (merge is better than rebase for markdown — auto-merges different paragraphs)
+    // Merge remote changes (merge is better than rebase for markdown)
     try {
       await execFile("git", [
         "-C",
         this.home,
-        "pull",
-        "--no-rebase",
-        "origin",
-        "HEAD",
+        "merge",
+        "origin/main",
+        "--no-edit",
       ]);
     } catch {
       // Merge conflict — abort and report
