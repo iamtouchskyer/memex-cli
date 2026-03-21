@@ -1957,6 +1957,11 @@ body::-webkit-scrollbar { display: none; }
     canvas.style.cursor = hit ? 'pointer' : 'grab';
   });
 
+  // Stop card panel clicks from bubbling to canvas handler
+  cardPanel.addEventListener('mousedown', (e) => e.stopPropagation());
+  cardPanel.addEventListener('mouseup', (e) => e.stopPropagation());
+  cardPanel.addEventListener('click', (e) => e.stopPropagation());
+
   window.addEventListener('mouseup', (e) => {
     if (dragNode) { physicsActive = true; settleCounter = 0; dragNode = null; }
     dragStart = null;
