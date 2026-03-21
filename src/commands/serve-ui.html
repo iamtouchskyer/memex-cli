@@ -713,12 +713,11 @@ body::-webkit-scrollbar { display: none; }
 
 /* === Graph view === */
 .graph-container {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 300;
   overflow: hidden;
   background: #0a0a0f;
-  border-radius: 13px;
 }
 .graph-container canvas {
   position: absolute;
@@ -863,26 +862,27 @@ body::-webkit-scrollbar { display: none; }
     </aside>
     <div class="main" id="timeline"></div>
   </div>
-  <div class="graph-container" id="graphContainer" style="display:none">
-    <canvas id="graphCanvas"></canvas>
-    <button class="graph-back-btn" id="graphBackBtn" onclick="document.getElementById('viewTimeline').click()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-      Back
-    </button>
-    <div class="graph-search-wrap">
-      <svg class="graph-search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="5.5"/><line x1="13" y1="13" x2="17" y2="17"/></svg>
-      <input type="text" class="graph-search" placeholder="Search nodes..." id="graphSearch">
-    </div>
-    <div class="graph-popover" id="graphPopover">
-      <div class="graph-popover-arrow" id="graphPopArrow"></div>
-      <div class="graph-pop-title" id="graphPopTitle"></div>
-      <div class="graph-pop-meta" id="graphPopMeta"></div>
-      <div class="graph-pop-body" id="graphPopBody"></div>
-      <div class="graph-pop-links" id="graphPopLinks"></div>
-    </div>
-    <div class="graph-orphan-badge" id="graphOrphanBadge"></div>
-    <div class="graph-hint">CLICK TO INSPECT · DRAG TO PAN · SCROLL TO ZOOM</div>
+</div>
+
+<div class="graph-container" id="graphContainer" style="display:none">
+  <canvas id="graphCanvas"></canvas>
+  <button class="graph-back-btn" id="graphBackBtn" onclick="document.getElementById('viewTimeline').click()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Back
+  </button>
+  <div class="graph-search-wrap">
+    <svg class="graph-search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="5.5"/><line x1="13" y1="13" x2="17" y2="17"/></svg>
+    <input type="text" class="graph-search" placeholder="Search nodes..." id="graphSearch">
   </div>
+  <div class="graph-popover" id="graphPopover">
+    <div class="graph-popover-arrow" id="graphPopArrow"></div>
+    <div class="graph-pop-title" id="graphPopTitle"></div>
+    <div class="graph-pop-meta" id="graphPopMeta"></div>
+    <div class="graph-pop-body" id="graphPopBody"></div>
+    <div class="graph-pop-links" id="graphPopLinks"></div>
+  </div>
+  <div class="graph-orphan-badge" id="graphOrphanBadge"></div>
+  <div class="graph-hint">CLICK TO INSPECT · DRAG TO PAN · SCROLL TO ZOOM</div>
 </div>
 
 <!-- Share modal -->
@@ -1576,7 +1576,7 @@ body::-webkit-scrollbar { display: none; }
     gAllEdges.forEach(([a, b]) => { connected.add(a); connected.add(b); });
 
     resizeCanvas();
-    const cx = W() * 0.5, cy = H() * 0.45;
+    const cx = W() * 0.5, cy = H() * 0.5;
 
     gNodes = [];
     const connArr = [...connected];
@@ -1630,7 +1630,7 @@ body::-webkit-scrollbar { display: none; }
   // Physics
   function simulate() {
     if (!physicsActive) return;
-    const cx = W() * 0.5, cy = H() * 0.45;
+    const cx = W() * 0.5, cy = H() * 0.5;
     let totalV = 0;
     gNodes.forEach(n => {
       if (n === dragNode) return;
