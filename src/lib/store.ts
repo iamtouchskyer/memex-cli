@@ -1,5 +1,5 @@
 import { readdir, readFile, writeFile, rename, mkdir } from "node:fs/promises";
-import { join, basename, dirname, resolve } from "node:path";
+import { join, basename, dirname, resolve, relative } from "node:path";
 
 interface ScannedCard {
   slug: string;
@@ -40,7 +40,7 @@ export class CardStore {
         await this.walkDir(fullPath, results);
       } else if (entry.name.endsWith(".md")) {
         results.push({
-          slug: basename(entry.name, ".md"),
+          slug: relative(this.cardsDir, fullPath).replace(/\.md$/, ""),
           path: fullPath,
         });
       }
@@ -87,8 +87,8 @@ export class CardStore {
         throw new Error(`Card not found: ${slug}`);
       }
     }
-    await mkdir(this.archiveDir, { recursive: true });
     const dest = join(this.archiveDir, `${slug}.md`);
+    await mkdir(dirname(dest), { recursive: true });
     await rename(path, dest);
     this.invalidateCache();
   }

@@ -69,6 +69,7 @@ program
       process.stderr.write(result.error! + "\n");
       process.exit(1);
     }
+    process.stdout.write(`Wrote card: ${slug}\n`);
   });
 
 program

@@ -37,7 +37,7 @@ describe("readCommand", () => {
   it("finds card in subdirectory", async () => {
     await mkdir(join(tmpDir, "cards", "sub"), { recursive: true });
     await writeFile(join(tmpDir, "cards", "sub", "nested.md"), "content");
-    const result = await readCommand(store, "nested");
+    const result = await readCommand(store, "sub/nested");
     expect(result.success).toBe(true);
     expect(result.content).toBe("content");
   });
